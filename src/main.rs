@@ -1,84 +1,81 @@
+use surt::camera::Camera;
 use surt::color::ColorRGB;
 use surt::ray::Ray;
-use surt::vector::Vector3D;
+use surt::sphere::Sphere;
+use surt::vector::Vector3d;
+use surt::world::World;
 
 use std::fs;
+use rand::Rng;
 
-fn hit_sphere(center: Vector3D, radius: f64, ray: &Ray) -> bool {
-    let oc: Vector3D = ray.orig - center;
-    let a = Vector3D::dot(ray.dir, ray.dir);
-    let b = Vector3D::dot(oc, ray.dir) * 2.0;
-    let c = Vector3D::dot(oc, oc) - radius * radius;
-    let discriminant = b * b - a * c * 4.0;
-    return discriminant > 0.0;
-}
-
-fn ray_color(ray: &Ray) -> ColorRGB {
-    if hit_sphere(Vector3D{x: 0.0, y: 0.0, z: -1.0}, 0.5, ray) {
-        return ColorRGB{r: 0.0, g: 0.0, b: 0.0}
+fn ray_color(ray: &Ray, world: &World) -> ColorRGB {
+    let result = world.hit(ray, 0.0, f64::MAX);
+    match result {
+        Some(rec) => {
+            return (ColorRGB::WHITE + rec.normal) * 0.5;
+        }
+        None => {
+            let unit_dir = ray.dir.unit_vec();
+            let t = 0.5 * (unit_dir.y + 1.0);
+            let grad_beg = ColorRGB::new(0.4, 0.4, 0.4);
+            let grad_end = ColorRGB::BLACK;
+            return grad_beg * (1.0 - t) + grad_end * t;
+        }
     }
-    let unit_dir = ray.dir.unit_vec();
-    let t = 0.5 * (unit_dir.y + 1.0);
-    let grad_beg = ColorRGB {
-        r: 0.4,
-        g: 0.4,
-        b: 0.4,
-    };
-    let grad_end = ColorRGB {
-        r: 0.0,
-        g: 0.0,
-        b: 0.0,
-    };
-    return grad_beg * (1.0 - t) + grad_end * t;
 }
 
 fn main() {
     let aspect_ratio: f64 = 16.0 / 9.0;
-    let image_width: i32 = 1080;
+    let image_width: i32 = 1920;
     let image_height: i32 = (image_width as f64 / aspect_ratio) as i32;
+    let samples_per_pixel: i32 = 100;
 
-    let viewport_height: f64 = 2.0;
-    let viewport_width: f64 = aspect_ratio * viewport_height;
-    let focal_length: f64 = 1.0;
+    let mut world = World::default();
+    world.add(Box::new(Sphere {
+        center: Vector3d::new(0.0, 0.0, -1.0),
+        radius: 0.1,
+    }));
 
-    let origin = Vector3D {
-        x: 0.0,
-        y: 0.0,
-        z: 0.0,
-    };
-    let horizontal = Vector3D {
-        x: viewport_width,
-        y: 0.0,
-        z: 0.0,
-    };
-    let vertical = Vector3D {
-        x: 0.0,
-        y: viewport_height,
-        z: 0.0,
-    };
+    world.add(Box::new(Sphere {
+        center: Vector3d::new(0.5, 0.9, -1.0),
+        radius: 0.2,
+    }));
 
-    let lower_left_corner = origin
-        - horizontal / 2.0
-        - vertical / 2.0
-        - Vector3D {
-            x: 0.0,
-            y: 0.0,
-            z: focal_length,
-        };
+    world.add(Box::new(Sphere {
+        center: Vector3d::new(1.0, -0.3, -1.0),
+        radius: 0.3,
+    }));
+
+    world.add(Box::new(Sphere {
+        center: Vector3d::new(-1.0, -0.1, -1.0),
+        radius: 0.3,
+    }));
+
+
+    world.add(Box::new(Sphere {
+        center: Vector3d::new(0.0, -100.5, -1.0),
+        radius: 100.0,
+    }));
+
+
+    let camera = Camera::new(aspect_ratio, 2.0, 1.0);
 
     let mut image: String = format!("P3\n{} {} \n255\n", image_width, image_height);
 
     for j in (0..image_height).rev() {
         for i in 0..image_width {
-            let u = i as f64 / (image_width as f64 - 1.0);
-            let v = j as f64 / (image_height as f64 - 1.0);
-            let ray = Ray {
-                orig: origin,
-                dir: lower_left_corner + horizontal * u + vertical * v - origin,
-            };
-            let color = ray_color(&ray);
+            let mut pixel_color = ColorRGB::BLACK;
+            for _ in 0..samples_per_pixel {
+                let mut rng = rand::thread_rng();
 
-            image.push_str(&color.to_ppm());
+                let u = (i as f64 + rng.gen::<f64>()) / (image_width as f64 - 1.0);
+                let v = (j as f64 + rng.gen::<f64>()) / (image_height as f64 - 1.0);
+                let ray = camera.get_ray(u, v);
+                pixel_color += ray_color(&ray, &world);
+            }
+            let sample_scale = 1.0 / samples_per_pixel as f64;
+            
+            image.push_str(&(pixel_color*sample_scale).to_ppm());
         }
     }
 

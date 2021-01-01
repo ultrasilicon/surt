@@ -1,9 +1,7 @@
 
 use std::ops;
 
-// pub trait Exportable {
-//     fn to_ppm(&self) -> String;
-// }
+use crate::vector::Vector3d;
 
 #[derive(Copy, Clone)]
 pub struct ColorRGB {
@@ -13,6 +11,13 @@ pub struct ColorRGB {
 }
 
 impl ColorRGB {
+    pub const WHITE: ColorRGB = ColorRGB{r: 1.0, g: 1.0, b: 1.0};
+    pub const BLACK: ColorRGB = ColorRGB{r: 0.0, g: 0.0, b: 0.0};
+
+    pub fn new(r: f64, g: f64, b: f64) -> ColorRGB {
+        return ColorRGB{r: r, g: g, b: b}
+    }
+
     pub fn to_ppm(&self) -> String {
         let ppm = format!( 
             "{} {} {}\n", 
@@ -22,6 +27,8 @@ impl ColorRGB {
         );
         return ppm;
     }
+
+
 }
 
 impl ops::Sub<ColorRGB> for ColorRGB {
@@ -44,6 +51,33 @@ impl ops::Add<ColorRGB> for ColorRGB {
             g: self.g + rhs.g,
             b: self.b + rhs.b
         };
+    }
+}
+
+impl ops::Add<Vector3d> for ColorRGB {
+    type Output = ColorRGB;
+    fn add(self, rhs: Vector3d) -> ColorRGB {
+        return ColorRGB{
+            r: self.r + rhs.x,
+            g: self.g + rhs.y,
+            b: self.b + rhs.z
+        };
+    }
+}
+
+impl ops::AddAssign for ColorRGB {
+    fn add_assign(&mut self, rhs: ColorRGB) {
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+    }
+}
+
+impl ops::SubAssign for ColorRGB {
+    fn sub_assign(&mut self, rhs: ColorRGB) {
+        self.r -= rhs.r;
+        self.g -= rhs.g;
+        self.b -= rhs.b;
     }
 }
 
