@@ -2,6 +2,7 @@
 use std::ops;
 
 use crate::vector::Vector3d;
+use crate::utils::clamp;
 
 #[derive(Copy, Clone)]
 pub struct ColorRGB {
@@ -21,9 +22,9 @@ impl ColorRGB {
     pub fn to_ppm(&self) -> String {
         let ppm = format!( 
             "{} {} {}\n", 
-            (255.999 * self.r) as i64, 
-            (255.999 * self.g) as i64,
-            (255.999 * self.b) as i64
+            (256.0 * clamp(self.r.sqrt(), 0.0, 0.999)) as i64, 
+            (256.0 * clamp(self.g.sqrt(), 0.0, 0.999)) as i64,
+            (256.0 * clamp(self.b.sqrt(), 0.0, 0.999)) as i64
         );
         return ppm;
     }
