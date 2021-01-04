@@ -45,6 +45,27 @@ impl Vector3d {
         }
     }
 
+    pub fn random_unit_vec() -> Vector3d {
+        return Vector3d::random_in_unit_sphere().unit_vec();
+    }
+
+    pub fn random_in_hemisphere(normal: Vector3d) -> Vector3d {
+        let vec = Vector3d::random_in_unit_sphere();
+        if Vector3d::dot(vec, normal) > 0.0 {
+            return vec;
+        } else {
+            return -vec;
+        }
+    }
+
+    pub fn dot(lhs: Vector3d, rhs: Vector3d) -> f64 {
+        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+    }
+
+    pub fn reflect(vec: Vector3d, normal: Vector3d) -> Vector3d {
+        return vec - normal * Vector3d::dot(vec, normal) * 2.0;
+    }
+
     pub fn len_sqr(&self) -> f64 {
         return self.x * self.x + self.y * self.y + self.z * self.z;
     }
@@ -57,8 +78,9 @@ impl Vector3d {
         return self / self.len();
     }
 
-    pub fn dot(lhs: Vector3d, rhs: Vector3d) -> f64 {
-        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+    pub fn near_zero(self) -> bool {
+        let limit: f64 = 1e-8;
+        return (self.x.abs() < limit) && (self.y.abs() < limit) && (self.z.abs() < limit);
     }
 }
 

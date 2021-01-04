@@ -1,5 +1,6 @@
 use surt::camera::Camera;
 use surt::color::ColorRGB;
+use surt::materials::Material;
 use surt::ray::Ray;
 use surt::sphere::Sphere;
 use surt::vector::Vector3d;
@@ -13,12 +14,16 @@ fn ray_color(ray: &Ray, world: &World, depth: i32) -> ColorRGB {
         return ColorRGB::BLACK;
     }
 
-    let result = world.hit(ray, 0.001, f64::MAX);
-    match result {
+    match world.hit(ray, 0.001, f64::MAX) {
         Some(rec) => {
-            let target = rec.normal + Vector3d::random_in_unit_sphere();
-            let deflected = Ray::new(rec.point, target);
-            return ray_color(&deflected, world, depth - 1) * 0.5;
+            match rec.material.scatter(ray, &rec) {
+                Some((ray, att)) => {
+                    return ray_color(&ray, world, depth - 1) * att;
+                }
+                None => {
+                    return ColorRGB::BLACK;
+                }
+            }
         }
         None => {
             let unit_dir = ray.dir.unit_vec();
@@ -41,31 +46,37 @@ fn main() {
     world.add(Box::new(Sphere {
         center: Vector3d::new(0.0, 0.0, -1.0),
         radius: 0.1,
+        material: Material::Lambertian{albedo: ColorRGB::new(0.8, 0.8, 0.0)}
     }));
 
     world.add(Box::new(Sphere {
         center: Vector3d::new(0.5, 0.9, -1.0),
-        radius: 0.2,
+        radius: 0.2, 
+        material: Material::Lambertian{albedo: ColorRGB::new(0.8, 0.8, 0.0)}
     }));
 
     world.add(Box::new(Sphere {
         center: Vector3d::new(1.0, -0.3, -1.0),
         radius: 0.3,
+        material: Material::Lambertian{albedo: ColorRGB::new(0.7, 0.1, 0.4)}
     }));
 
     world.add(Box::new(Sphere {
         center: Vector3d::new(-1.0, -0.1, -1.0),
         radius: 0.3,
+        material: Material::Lambertian{albedo: ColorRGB::new(0.1, 0.2, 0.4)}
     }));
 
     world.add(Box::new(Sphere {
         center: Vector3d::new(0.0, -0.6, -1.0),
         radius: 0.4,
+        material: Material::Metal{albedo: ColorRGB::new(0.8, 0.8, 0.0)}
     }));
 
     world.add(Box::new(Sphere {
         center: Vector3d::new(0.0, -100.5, -1.0),
         radius: 100.0,
+        material: Material::Metal{albedo: ColorRGB::new(0.3, 0.3, 0.3)}
     }));
 
 

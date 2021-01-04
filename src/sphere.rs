@@ -1,13 +1,17 @@
 
+use crate::materials::Material;
 use crate::surface::Surface;
 use crate::surface::HitRecord;
 use crate::vector::Vector3d;
 use crate::ray::Ray;
 
-#[derive(Copy, Clone)]
+
+// potential design problem of trait Material here
+// #[derive(Copy, Clone)]
 pub struct Sphere {
     pub center: Vector3d,
-    pub radius: f64
+    pub radius: f64,
+    pub material: Material
 }
 
 impl Surface for Sphere {
@@ -35,7 +39,8 @@ impl Surface for Sphere {
             &ray.at(root),
             root,
             ray,
-            (ray.at(root) - self.center) / self.radius
+            (ray.at(root) - self.center) / self.radius,
+            self.material
         );
         return Some(rec);
     }

@@ -1,5 +1,6 @@
 pub mod camera;
 pub mod color;
+pub mod materials;
 pub mod ray;
 pub mod vector;
 pub mod surface;

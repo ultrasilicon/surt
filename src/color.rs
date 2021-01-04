@@ -82,6 +82,17 @@ impl ops::SubAssign for ColorRGB {
     }
 }
 
+impl ops::Mul<ColorRGB> for ColorRGB {
+    type Output = ColorRGB;
+    fn mul(self, rhs: ColorRGB) -> ColorRGB {
+        return ColorRGB{
+            r: self.r * rhs.r,
+            g: self.g * rhs.g,
+            b: self.b * rhs.b
+        };
+    }
+}
+
 impl ops::Mul<f64> for ColorRGB {
     type Output = ColorRGB;
     fn mul(self, rhs: f64) -> ColorRGB {
