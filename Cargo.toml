@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 rand = { git = "https://github.com/rust-lang-nursery/rand" }
+pixel-canvas = "0.2.0"

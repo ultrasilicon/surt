@@ -62,8 +62,12 @@ impl Vector3d {
         return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
     }
 
-    pub fn reflect(vec: Vector3d, normal: Vector3d) -> Vector3d {
-        return vec - normal * Vector3d::dot(vec, normal) * 2.0;
+    pub fn cross(lhs: Vector3d, rhs: Vector3d) -> Vector3d {
+        return Vector3d{
+            x: lhs.y * rhs.z - lhs.z * rhs.y,
+            y: lhs.z * rhs.x - lhs.x * rhs.z,
+            z: lhs.x * rhs.y - lhs.y * rhs.x
+        };
     }
 
     pub fn len_sqr(&self) -> f64 {
