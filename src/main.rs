@@ -9,7 +9,8 @@ use surt::world::World;
 
 use pixel_canvas::{input::MouseState, Canvas, Color};
 use rand::Rng;
-use std::fs;
+use std::f64::consts::PI;
+// use std::fs;
 
 fn ray_color(ray: &Ray, world: &World, depth: i32) -> ColorRGB {
     if depth <= 0 {
@@ -37,9 +38,9 @@ fn ray_color(ray: &Ray, world: &World, depth: i32) -> ColorRGB {
 
 fn main() {
     let aspect_ratio: f64 = 16.0 / 9.0;
-    let image_width: i32 = 400;
+    let image_width: i32 = 720;
     let image_height: i32 = (image_width as f64 / aspect_ratio) as i32;
-    let samples_per_pixel: i32 = 20;
+    let samples_per_pixel: i32 = 1;
     let max_depth: i32 = 50;
 
     let mut world = World::default();
@@ -96,22 +97,32 @@ fn main() {
             albedo: ColorRGB::new(0.8, 0.8, 0.8),
         },
     }));
-
-    let camera = Camera::new(
-        Vector3d::new(-2.0, 2.0, 1.0),
-        Vector3d::new(0.0, 0.0, -1.0),
-        Vector3d::new(0.0, 1.0, 0.0),
-        20.0,
+ 
+    let mut camera = Camera::new(
+        Vector3d::new(0.0, 0.0, 0.0),
+        Vector3d::new(0.0, 0.0, 0.0),
+        60.0,
         aspect_ratio,
     );
 
     let canvas = Canvas::new(image_width as usize, image_height as usize)
         .title("SURT")
+        .show_ms(true)
         .state(MouseState::new())
         .input(MouseState::handle_input);
     // The canvas will render for you at up to 60fps.
     canvas.render(move |mouse, image| {
         // Modify the `image` based on your state.
+        
+        let cam_angle_x = -((mouse.x as f64 / image_width  as f64) * 2.0 * PI).sin();
+        let cam_angle_y = -((mouse.y as f64 / image_height as f64) * 1.0 * PI).cos() * 2.0;
+        // let cam_angle_z = -1.0;
+        let cam_angle_z = ((mouse.x as f64 / image_width  as f64) * 2.0 * PI).cos();
+        println!("x: {}, y: {}", cam_angle_x, cam_angle_y);
+
+        camera.update_angle(Vector3d::new(cam_angle_x, cam_angle_y, cam_angle_z));
+        
+
         let width = image.width() as usize;
         for (y, row) in image.chunks_mut(width).enumerate() {
             for (x, pixel) in row.iter_mut().enumerate() {
