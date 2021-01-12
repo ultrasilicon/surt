@@ -28,7 +28,7 @@ impl Camera {
             origin: origin,
             horizontal: horizontal,
             vertical: vertical,
-            lower_left: origin - horizontal / 2.0 - vertical / 2.0 - w,
+            lower_left: origin - (horizontal + vertical) / 2.0 - w,
             viewport_width: viewport_width,
             viewport_height: viewport_height,
         };
@@ -41,7 +41,7 @@ impl Camera {
 
         self.horizontal = u * self.viewport_width;
         self.vertical = v * self.viewport_height;
-        self.lower_left = self.origin - self.horizontal / 2.0 - self.vertical / 2.0 - w;
+        self.lower_left = self.origin - (self.horizontal + self.vertical) / 2.0 - w;
     }
 
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {

@@ -53,7 +53,7 @@ impl Material {
                 }
             }
             Material::Dielectric {ir} => {
-                let refr_ratio: f64 = if rec.front_face { 1.0 / ir} else { *ir };
+                let refr_ratio: f64 = if rec.front_face { 1.0 / ir } else { *ir };
                 let unit_dir = ray.dir.unit_vec();
 
                 let cos_theta = Vector3d::dot(-unit_dir, rec.normal).min(1.0);
@@ -71,7 +71,7 @@ impl Material {
                     refracted = refract(unit_dir, rec.normal, refr_ratio);
                 }
                 
-                return Some((Ray::new(rec.point, refracted), ColorRGB::new(1.0, 1.0, 1.0)));
+                return Some((Ray::new(rec.point, refracted), ColorRGB::WHITE));
             }
         }
     }

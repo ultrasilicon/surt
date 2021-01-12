@@ -36,6 +36,7 @@ fn ray_color(ray: &Ray, world: &World, depth: i32) -> ColorRGB {
     }
 }
 
+
 fn main() {
     let aspect_ratio: f64 = 16.0 / 9.0;
     let image_width: i32 = 720;
@@ -100,7 +101,7 @@ fn main() {
  
     let mut camera = Camera::new(
         Vector3d::new(0.0, 0.0, 0.0),
-        Vector3d::new(0.0, 0.0, 0.0),
+        Vector3d::new(0.0, 0.0, -1.0),
         60.0,
         aspect_ratio,
     );
@@ -114,23 +115,24 @@ fn main() {
     canvas.render(move |mouse, image| {
         // Modify the `image` based on your state.
         
-        let cam_angle_x = -((mouse.x as f64 / image_width  as f64) * 2.0 * PI).sin();
-        let cam_angle_y = -((mouse.y as f64 / image_height as f64) * 1.0 * PI).cos() * 2.0;
+        let cam_angle_x = -(mouse.x as f64 / image_width  as f64 * 2.0 * PI).sin();
+        let cam_angle_y = -(mouse.y as f64 / image_height as f64 * PI).cos() * 2.0;
         // let cam_angle_z = -1.0;
-        let cam_angle_z = ((mouse.x as f64 / image_width  as f64) * 2.0 * PI).cos();
-        println!("x: {}, y: {}", cam_angle_x, cam_angle_y);
+        let cam_angle_z = (mouse.x as f64 / image_width  as f64 * 2.0 * PI).cos();
+        // println!("x: {}, y: {}", cam_angle_x, cam_angle_y);
 
         camera.update_angle(Vector3d::new(cam_angle_x, cam_angle_y, cam_angle_z));
         
 
         let width = image.width() as usize;
+        let mut rng = rand::thread_rng();
+
         for (y, row) in image.chunks_mut(width).enumerate() {
             for (x, pixel) in row.iter_mut().enumerate() {
                 let mut pixel_color = ColorRGB::BLACK;
                 for _ in 0..samples_per_pixel {
-                    let mut rng = rand::thread_rng();
-                    let u = (x as f64 + rng.gen::<f64>()) / (image_width as f64 - 1.0);
-                    let v = (y as f64 + rng.gen::<f64>()) / (image_height as f64 - 1.0);
+                    let u = (x as f64 + rng.gen::<f64>()) / (image_width - 1) as f64;
+                    let v = (y as f64 + rng.gen::<f64>()) / (image_height - 1) as f64;
                     let ray = camera.get_ray(u, v);
                     pixel_color += ray_color(&ray, &world, max_depth);
                 }

@@ -18,7 +18,6 @@ impl HitRecord {
         return HitRecord{
             point: point.clone(),
             normal: if front_face { out_normal } else {-out_normal},
-            // normal: out_normal,
             t: t,
             front_face: front_face,
             material: material
